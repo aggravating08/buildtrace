@@ -1,6 +1,12 @@
 const { Client, Account, TablesDB, ID, Query, Permission, Role } = window.Appwrite;
 const STORAGE_KEY = 'buildtrace-v1';
 const CONFIG_KEY = 'buildtrace-appwrite-config';
+const DEFAULT_CONFIG = {
+  endpoint: 'https://sgp.cloud.appwrite.io/v1',
+  projectId: '6ae61716002628cb9ce5',
+  databaseId: '6ae6174f000c9969ea02',
+  tableId: '6ae6175b0032003423e2',
+};
 const SAMPLE = [
   { $id: 'sample-1', title: 'The retry loop that looked like a database outage', project: 'Signal API', kind: 'bug', problem: 'p95 latency spiked every few minutes. The database looked guilty, but the pool was healthy.', fix: 'A client retry policy was resetting its backoff after a successful health check. The same request could then re-enter a burst window.', lesson: 'Log retry state per request, not just aggregate retry counts. A “healthy” dependency can hide a noisy caller.', tags: 'retries, latency, api', url: '', loggedAt: new Date(Date.now() - 1000 * 60 * 33).toISOString(), starred: false },
   { $id: 'sample-2', title: 'Make the migration boring on purpose', project: 'Studio Console', kind: 'decision', problem: 'We needed to move a high-traffic table without freezing writes or running a risky one-shot migration.', fix: 'Added the new nullable field, dual-wrote, backfilled in small batches, checked parity, then removed the old read path.', lesson: 'For a live schema change: expand, migrate, verify, contract. Each step should be reversible.', tags: 'database, migration, reliability', url: '', loggedAt: new Date(Date.now() - 1000 * 60 * 60 * 7).toISOString(), starred: false },
@@ -17,7 +23,7 @@ let toastTimer;
 const $ = (s) => document.querySelector(s);
 const esc = (s='') => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function readConfig(){ try{return JSON.parse(localStorage.getItem(CONFIG_KEY)||'null')}catch{return null} }
+function readConfig(){ try{const saved=localStorage.getItem(CONFIG_KEY);return saved==='disabled'?null:saved?JSON.parse(saved):DEFAULT_CONFIG}catch{return DEFAULT_CONFIG} }
 function readLocal(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch{return null} }
 function saveLocal(items){localStorage.setItem(STORAGE_KEY,JSON.stringify(items))}
 function fmtDate(value){const d=new Date(value);if(Number.isNaN(d.valueOf()))return 'Just now';const mins=Math.max(0,Math.floor((Date.now()-d)/60000));if(mins<1)return 'Just now';if(mins<60)return `${mins}m ago`;const hrs=Math.floor(mins/60);if(hrs<24)return `${hrs}h ago`;if(hrs<48)return 'Yesterday';return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}
@@ -44,6 +50,6 @@ $('#new-trace').addEventListener('click',()=>showModal('trace-modal'));$('#empty
 $('#profile-menu').addEventListener('click',()=>toast('BuildTrace keeps your engineering notes private by default.'));
 $('#trace-form').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget);const data=Object.fromEntries(fd.entries());data.tags=String(data.tags||'').split(',').map(x=>x.trim()).filter(Boolean).join(', ');try{await saveTrace(data);e.currentTarget.reset();hideModal('trace-modal')}catch(err){toast(`Couldn't save: ${err.message||'check Appwrite settings'}`)}});
 $('#settings-form').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget);const candidate={endpoint:String(fd.get('endpoint')).trim(),projectId:String(fd.get('projectId')).trim(),databaseId:String(fd.get('databaseId')).trim(),tableId:String(fd.get('tableId')).trim()};$('#settings-status').classList.remove('success');$('#settings-status').textContent='Connecting…';try{await connect(candidate);hideModal('settings-modal');toast('Appwrite is connected')}catch(err){appwrite=null;$('#settings-status').textContent=`Couldn't connect: ${err.message||'check the endpoint, IDs and permissions'}`;$('#settings-status').classList.remove('success')}});
-$('#disconnect-appwrite').addEventListener('click',async()=>{if(appwrite)await appwrite.account.deleteSession({sessionId:'current'}).catch(()=>{});localStorage.removeItem(CONFIG_KEY);config=null;appwrite=null;setStatus('');traces=readLocal()||SAMPLE.map(x=>({...x,preview:true}));render();toast('Disconnected from Appwrite')});
+$('#disconnect-appwrite').addEventListener('click',async()=>{if(appwrite)await appwrite.account.deleteSession({sessionId:'current'}).catch(()=>{});localStorage.setItem(CONFIG_KEY,'disabled');config=null;appwrite=null;setStatus('');traces=readLocal()||SAMPLE.map(x=>({...x,preview:true}));render();toast('Disconnected from Appwrite')});
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#search').focus();if(innerWidth<690)$('#search').parentElement.classList.add('open')}if(e.key==='Escape'){document.querySelectorAll('.modal-backdrop').forEach(m=>m.classList.add('hidden'));$('#sidebar').classList.remove('open')}});
 if(config)setStatus('Connecting…');refresh().then(()=>{if(!config){$('#storage-title').textContent=readLocal()?'Local preview':'Sample workspace';$('#storage-copy').textContent=readLocal()?'Changes are saved only in this browser.':'Example traces are sample data. Connect Appwrite to save privately.';$('#sync-label').textContent=readLocal()?'Saved in this browser':'Sample data · not synced'}});
