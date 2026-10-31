@@ -12,18 +12,22 @@
 
 ## Run
 
-Open `index.html` in a modern browser or serve this folder with any static web server. There is no build step. The Appwrite Web SDK loads from the official jsDelivr CDN.
+Open index.html in a modern browser or serve this folder with any static web server. There is no build step. The Appwrite Web SDK loads from the official jsDelivr CDN.
+
+## Live demo
+
+Try [BuildTrace on GitHub Pages](https://aggravating08.github.io/buildtrace/). The public demo opens in clearly labeled local-preview mode with fictional examples. It does not connect to a live Appwrite database until you configure your own project using the steps below.
 
 ## Connect Appwrite TablesDB
 
 1. Create an Appwrite Cloud project and add your app's hostname as a Web platform.
 2. Enable anonymous sign-in in the Appwrite project's Auth settings.
-3. Create a TablesDB database and a `traces` table with row-level security enabled.
-4. Add text columns named `title`, `project`, `kind`, `problem`, `fix`, `lesson`, `tags`, `url`, `ownerId`, a datetime column `loggedAt`, and a boolean column `starred`.
+3. Create a TablesDB database and a traces table with row-level security enabled.
+4. Add text columns named title, project, kind, problem, fix, lesson, tags, url, ownerId, a datetime column loggedAt, and a boolean column starred.
 5. Allow authenticated users to create rows. BuildTrace creates an anonymous session and assigns each row read/update/delete permissions for that session's user ID.
-6. In BuildTrace, choose **Connect a database** and enter the endpoint, project ID, database ID, and table ID. These are public project identifiers. No server API key is used or required in the browser.
+6. In BuildTrace, choose Connect a database and enter the endpoint, project ID, database ID, and table ID. These are public project identifiers. No server API key is used or required in the browser.
 
-The app uses Appwrite TablesDB `listRows`, `createRow`, `updateRow`, and `deleteRow`. When Appwrite is not configured, the app stays in local preview mode and labels that state; it never presents local data as synced database data.
+The app uses Appwrite TablesDB listRows, createRow, updateRow, and deleteRow. When Appwrite is not configured, the app stays in local preview mode and labels that state; it never presents local data as synced database data.
 
 ## Stack
 
