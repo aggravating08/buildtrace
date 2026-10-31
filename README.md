@@ -1,40 +1,26 @@
 # BuildTrace
 
-**Keep the fix, not just the ticket.** BuildTrace is a private engineering memory for debugging sessions, technical decisions, and lessons that should be reusable. It is a new solo project built for the Appwrite Databases Hackathon.
+**Keep the fix, not just the ticket.** BuildTrace is a private engineering memory for debugging sessions, technical decisions, and reusable lessons. It is a new, solo-built project for the Appwrite Databases Hackathon.
 
 ## What it does
 
-- Capture an engineering trace with the symptom, fix, and the lesson to keep.
-- Search by title, project, problem, fix, lesson, and tags; filter by trace type or project.
+- Capture each engineering trace with the symptom, fix, and lesson.
+- Search title, project, problem, fix, lesson, and tags; filter by type or project.
 - Star useful fixes, expand the full trace, and add an optional reference URL.
-- Keep notes in this browser for a local preview, or connect Appwrite TablesDB for private, account-scoped persistence.
-- The initial sample traces are fictional examples and are clearly labeled as sample data. They are not stored in Appwrite.
-
-## Run
-
-Open `index.html` in a modern browser or serve this folder with any static web server. There is no build step. The Appwrite Web SDK loads from the official jsDelivr CDN.
+- Store each trace in Appwrite TablesDB with row-level security. Each anonymous session can read, update, and delete only its own records.
+- Fall back to clearly labeled local preview mode if Appwrite is unavailable. Fictional sample traces are never presented as synced data.
 
 ## Live demo
 
-Try [BuildTrace on GitHub Pages](https://aggravating08.github.io/buildtrace/). The public demo opens in clearly labeled local-preview mode with fictional examples. It does not connect to a live Appwrite database until you configure your own project using the steps below.
+[Open BuildTrace](https://aggravating08.github.io/buildtrace/). The demo connects to a free Appwrite TablesDB project by default. It creates an anonymous session in your browser; records you add are scoped to that session and are not visible to other visitors.
 
-## Connect Appwrite TablesDB
+## Technology and privacy
 
-1. Create an Appwrite Cloud project and add your app's hostname as a Web platform.
-2. Enable anonymous sign-in in the Appwrite project's Auth settings.
-3. Create a TablesDB database and a `traces` table with row-level security enabled.
-4. Add text columns named `title`, `project`, `kind`, `problem`, `fix`, `lesson`, `tags`, `url`, `ownerId`, a datetime column `loggedAt`, and a boolean column `starred`.
-5. Allow authenticated users to create rows. BuildTrace creates an anonymous session and assigns each row read/update/delete permissions for that session's user ID.
-6. In BuildTrace, choose **Connect a database** and enter the endpoint, project ID, database ID, and table ID. These are public project identifiers. No server API key is used or required in the browser.
+- HTML, CSS, and JavaScript with Appwrite Web SDK 29.0.0.
+- Appwrite TablesDB `listRows`, `createRow`, `updateRow`, and `deleteRow`.
+- No server API key is embedded in the browser. The endpoint, project ID, database ID, and table ID are public identifiers.
+- The database uses the serverless TablesDB option. The demo was set up in Appwrite's Free organization without a payment method or paid database tier.
 
-The app uses Appwrite TablesDB `listRows`, `createRow`, `updateRow`, and `deleteRow`. When Appwrite is not configured, the app stays in local preview mode and labels that state; it never presents local data as synced database data.
+## Run locally
 
-## Stack
-
-- HTML, CSS, and JavaScript
-- Appwrite Web SDK 29.0.0
-- Appwrite TablesDB
-
-## Submission demo notes
-
-Show the setup panel and explain that sample content is fictional. A live Appwrite demonstration requires a project/database configured as described above. Do not record private notes, API keys, or account data in the public demo.
+Open `index.html` in a modern browser or serve this folder with any static web server. To connect your own Appwrite project, add your hostname as a Web platform, enable anonymous sign-in, create a TablesDB database and a `traces` table, then enter the project IDs in **Connect Appwrite**. The table needs text columns `title`, `project`, `kind`, `problem`, `fix`, `lesson`, `tags`, `url`, `ownerId`, a datetime column `loggedAt`, and a boolean column `starred`. Enable row-level security and allow authenticated users to create rows.
